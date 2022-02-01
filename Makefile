@@ -6,3 +6,6 @@ start-http2:
 
 generate-ssl:
 	openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+
+export_requirements:
+	poetry export -f requirements.txt --output requirements.txt

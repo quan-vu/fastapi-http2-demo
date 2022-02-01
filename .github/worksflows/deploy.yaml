@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ develop, cicd ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  deploy-uat:
+    runs-on: self-hosted
+    env:
+      PROJECT_NAME: ${{github.repository}}
+      PROJECT_DIR: /home/ubuntu/projects/${PROJECT_NAME}/current
+    steps:
+      - name: Show current directory, current user
+        run: |
+          ls -ll
+          echo ${GITHUB_WORKSPACE}
+          echo $USER
+      - uses: actions/checkout@v2
+      - name: Check runner working dir
+        run: |
+          echo ${GITHUB_WORKSPACE}
+      - name: Create project dir
+        run: |
+          mkdir -p ${PROJECT_DIR}
+      - name: Copy source
+        run: |
+          cp -r ${GITHUB_WORKSPACE}/* ${PROJECT_DIR}
+      - name: Python - Restart project
+        run: |
+          sudo systemctl restart ${PROJECT_NAME}.service
+      - name: Final - System secure permissions
+        run: |
+          sudo chown -R $USER:www-data ${PROJECT_DIR}
+          cd ${PROJECT_DIR} && find -type d -print0 | xargs -0 chmod 0755;
+          cd ${PROJECT_DIR} && find -type f -print0 | xargs -0 chmod 0644;
+          stat -c '%A %a %n' *;
